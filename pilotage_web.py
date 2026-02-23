@@ -15,19 +15,21 @@ with col1:
     USD_TO_INR = st.number_input(
         "Enter Today's USD to INR Exchange Rate",
         min_value=0.0,
-        value=90.73,
-        step=0.01
+        value=90.73000,
+        step=0.00001,
+        format="%.5f"
     )
 
 with col2:
     fuel_rate = st.number_input(
         "Enter Fuel Surcharge per GT",
         min_value=0.0,
-        value=0.10,
-        step=0.01
+        value=0.10000,
+        step=0.00001,
+        format="%.5f"
     )
 
-# Vessel Selection (Now includes Non-Container also)
+# Vessel Selection
 vessel_type = st.selectbox(
     "Select Vessel Type",
     [
@@ -42,7 +44,7 @@ vessel_type = st.selectbox(
     ]
 )
 
-# 🔹 Internal Mapping Logic
+# Internal Mapping
 if vessel_type == "Container":
     vessel_category = "Container"
 else:
@@ -53,7 +55,7 @@ run_type = st.selectbox(
     ["Foreign Run", "Coastal Run"]
 )
 
-# Whole number GT only
+# Whole number GT
 gt = st.number_input(
     "Enter Gross Tonnage (GT)",
     min_value=0,
@@ -178,17 +180,17 @@ if calculate and gt > 0:
     st.write(f"Selected Vessel Type: {vessel_type}")
     st.write(f"Rate Category Applied: {vessel_category}")
     st.write(f"Base Charge: {round(base_total,2)} {currency}")
-    st.write(f"Fuel Surcharge ({fuel_rate} per GT): {round(fuel_surcharge,2)} {currency}")
-    st.success(f"Total Charge: {round(total,2)} {currency}")
+    st.write(f"Fuel Surcharge ({fuel_rate:.5f} per GT): {round(fuel_surcharge,5)} {currency}")
+    st.success(f"Total Charge: {round(total,5)} {currency}")
 
     st.subheader("🔄 Currency Conversion")
 
     if currency == "USD":
         total_inr = total * USD_TO_INR
-        st.write(f"Equivalent in INR: ₹ {round(total_inr,2)}")
+        st.write(f"Equivalent in INR: ₹ {round(total_inr,5)}")
     else:
         total_usd = total / USD_TO_INR
-        st.write(f"Equivalent in USD: $ {round(total_usd,2)}")
+        st.write(f"Equivalent in USD: $ {round(total_usd,5)}")
 
 elif calculate and gt == 0:
     st.warning("Please enter a valid GT value.")
