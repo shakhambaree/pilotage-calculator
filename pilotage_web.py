@@ -1,56 +1,62 @@
-# Pilotage Charges Calculator (Dynamic USD Version)
+import streamlit as st
 
-print("🚢 Pilotage Charges Calculator")
-print("Includes one Berthing and one Un-berthing\n")
+st.set_page_config(page_title="Pilotage Charges Calculator", page_icon="🚢")
 
-while True:
+st.title("🚢 Pilotage Charges Calculator")
+st.markdown("Includes one Berthing and one Un-berthing")
 
-    # -----------------------------
-    # INPUT USD EXCHANGE RATE
-    # -----------------------------
+# -----------------------------
+# INPUT SECTION
+# -----------------------------
 
-    USD_TO_INR = float(input("Enter Today's USD to INR Exchange Rate: "))
+# Dynamic USD rate input
+USD_TO_INR = st.number_input(
+    "Enter Today's USD to INR Exchange Rate",
+    min_value=0.0,
+    value=90.73,
+    step=0.01
+)
 
-    print("\nSelect Vessel Type:")
-    print("1. Container")
-    print("2. Bulk")
-    print("3. Break Bulk")
-    print("4. Liquid")
-    print("5. LTSB")
-    print("6. MFF")
-    print("7. Others")
+# Vessel type selection
+vessel_type = st.selectbox(
+    "Select Vessel Type",
+    ["Container", "Bulk", "Break Bulk", "Liquid", "LTSB", "MFF", "Others"]
+)
 
-    vessel_choice = int(input("Enter choice (1-7): "))
+# Auto mapping
+if vessel_type == "Container":
+    vessel_category = "Container Vessel"
+else:
+    vessel_category = "Other Than Container Vessel"
 
-    if vessel_choice == 1:
-        vessel_category = "Container Vessel"
-    else:
-        vessel_category = "Other Than Container Vessel"
+run_type = st.selectbox(
+    "Select Run Type",
+    ["Foreign Run", "Coastal Run"]
+)
 
-    print("\nSelect Run Type:")
-    print("1. Foreign Run")
-    print("2. Coastal Run")
+# Whole number GT
+gt = st.number_input(
+    "Enter Gross Tonnage (GT)",
+    min_value=0,
+    step=1,
+    format="%d"
+)
 
-    run_choice = int(input("Enter choice (1-2): "))
+# Add Calculate Button (important for Streamlit)
+calculate = st.button("Calculate Charges")
 
-    if run_choice == 1:
-        run_type = "Foreign Run"
-    else:
-        run_type = "Coastal Run"
+# -----------------------------
+# CALCULATION
+# -----------------------------
 
-    # GT as whole number
-    gt = int(input("\nEnter Gross Tonnage (GT) (Whole number only): "))
-
-    # -----------------------------
-    # RATE CALCULATION
-    # -----------------------------
+if calculate and gt > 0:
 
     rate = 0
     minimum = 0
     currency = "USD"
 
     # ==============================
-    # CONTAINER VESSELS
+    # CONTAINER
     # ==============================
 
     if vessel_category == "Container Vessel":
@@ -72,7 +78,7 @@ while True:
             else:
                 rate = 0.824
 
-        else:  # Coastal Run
+        else:
             currency = "INR"
 
             if gt <= 3000:
@@ -112,7 +118,7 @@ while True:
             else:
                 rate = 0.929
 
-        else:  # Coastal Run
+        else:
             currency = "INR"
 
             if gt <= 3000:
@@ -130,7 +136,7 @@ while True:
                 rate = 22.87
 
     # -----------------------------
-    # CALCULATE TOTAL
+    # TOTAL CALCULATION
     # -----------------------------
 
     if rate == 0:
@@ -149,26 +155,19 @@ while True:
     # OUTPUT
     # -----------------------------
 
-    print("\n💰 Charges Breakdown")
-    print("Base Charge:", round(base_total, 2), currency)
-    print("Fuel Surcharge (0.1 per GT):", round(fuel_surcharge, 2), currency)
-    print("Total Charge:", round(total, 2), currency)
+    st.subheader("💰 Charges Breakdown")
+    st.write(f"Base Charge: {round(base_total,2)} {currency}")
+    st.write(f"Fuel Surcharge (0.1 per GT): {round(fuel_surcharge,2)} {currency}")
+    st.success(f"Total Charge: {round(total,2)} {currency}")
 
-    print("\n🔄 Currency Conversion")
+    st.subheader("🔄 Currency Conversion")
 
     if currency == "USD":
         total_inr = total * USD_TO_INR
-        print("Equivalent in INR: ₹", round(total_inr, 2))
+        st.write(f"Equivalent in INR: ₹ {round(total_inr,2)}")
     else:
         total_usd = total / USD_TO_INR
-        print("Equivalent in USD: $", round(total_usd, 2))
+        st.write(f"Equivalent in USD: $ {round(total_usd,2)}")
 
-    # -----------------------------
-    # REPEAT OPTION
-    # -----------------------------
-
-    repeat = input("\nDo you want to calculate again? (y/n): ")
-
-    if repeat.lower() != 'y':
-        print("\nThank you for using Pilotage Charges Calculator 🚢")
-        break
+elif calculate and gt == 0:
+    st.warning("Please enter a valid GT value.")
