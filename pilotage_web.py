@@ -9,21 +9,30 @@ st.markdown("Includes one Berthing and one Un-berthing")
 # INPUT SECTION
 # -----------------------------
 
-# Dynamic USD rate input
-USD_TO_INR = st.number_input(
-    "Enter Today's USD to INR Exchange Rate",
-    min_value=0.0,
-    value=90.73,
-    step=0.01
-)
+col1, col2 = st.columns(2)
 
-# Vessel type selection
+with col1:
+    USD_TO_INR = st.number_input(
+        "Enter Today's USD to INR Exchange Rate",
+        min_value=0.0,
+        value=90.73,
+        step=0.01
+    )
+
+with col2:
+    fuel_rate = st.number_input(
+        "Enter Fuel Surcharge per GT",
+        min_value=0.0,
+        value=0.10,
+        step=0.01
+    )
+
 vessel_type = st.selectbox(
     "Select Vessel Type",
     ["Container", "Bulk", "Break Bulk", "Liquid", "LTSB", "MFF", "Others"]
 )
 
-# Auto mapping
+# Auto Mapping
 if vessel_type == "Container":
     vessel_category = "Container Vessel"
 else:
@@ -34,7 +43,7 @@ run_type = st.selectbox(
     ["Foreign Run", "Coastal Run"]
 )
 
-# Whole number GT
+# Whole number GT only
 gt = st.number_input(
     "Enter Gross Tonnage (GT)",
     min_value=0,
@@ -42,7 +51,6 @@ gt = st.number_input(
     format="%d"
 )
 
-# Add Calculate Button (important for Streamlit)
 calculate = st.button("Calculate Charges")
 
 # -----------------------------
@@ -148,7 +156,8 @@ if calculate and gt > 0:
         else:
             base_total = calculated
 
-    fuel_surcharge = gt * 0.1
+    # Fuel surcharge now dynamic
+    fuel_surcharge = gt * fuel_rate
     total = base_total + fuel_surcharge
 
     # -----------------------------
@@ -156,8 +165,9 @@ if calculate and gt > 0:
     # -----------------------------
 
     st.subheader("💰 Charges Breakdown")
+
     st.write(f"Base Charge: {round(base_total,2)} {currency}")
-    st.write(f"Fuel Surcharge (0.1 per GT): {round(fuel_surcharge,2)} {currency}")
+    st.write(f"Fuel Surcharge ({fuel_rate} per GT): {round(fuel_surcharge,2)} {currency}")
     st.success(f"Total Charge: {round(total,2)} {currency}")
 
     st.subheader("🔄 Currency Conversion")
