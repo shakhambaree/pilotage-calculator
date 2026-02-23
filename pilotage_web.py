@@ -11,17 +11,25 @@ st.markdown("Includes one Berthing and one Un-berthing")
 # INPUT SECTION
 # -----------------------------
 
-vessel_category = st.selectbox(
-    "Select Vessel Category",
-    ["Container Vessel", "Other Than Container Vessel"]
+# New Vessel Type Selection
+vessel_type = st.selectbox(
+    "Select Vessel Type",
+    ["Container", "Bulk", "Break Bulk", "Liquid", "LTSB", "MFF", "Others"]
 )
+
+# Automatically determine vessel category
+if vessel_type == "Container":
+    vessel_category = "Container Vessel"
+else:
+    vessel_category = "Other Than Container Vessel"
 
 run_type = st.selectbox(
     "Select Run Type",
     ["Foreign Run", "Coastal Run"]
 )
 
-gt = st.number_input("Enter Gross Tonnage (GT)", min_value=0.0)
+# GT as whole number only
+gt = st.number_input("Enter Gross Tonnage (GT)", min_value=0, step=1, format="%d")
 
 # -----------------------------
 # RATE CALCULATION
