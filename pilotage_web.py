@@ -27,16 +27,26 @@ with col2:
         step=0.01
     )
 
+# Vessel Selection (Now includes Non-Container also)
 vessel_type = st.selectbox(
     "Select Vessel Type",
-    ["Container", "Bulk", "Break Bulk", "Liquid", "LTSB", "MFF", "Others"]
+    [
+        "Container",
+        "Non-Container",
+        "Bulk",
+        "Break Bulk",
+        "Liquid",
+        "LTSB",
+        "MFF",
+        "Others"
+    ]
 )
 
-# Auto Mapping
+# 🔹 Internal Mapping Logic
 if vessel_type == "Container":
-    vessel_category = "Container Vessel"
+    vessel_category = "Container"
 else:
-    vessel_category = "Other Than Container Vessel"
+    vessel_category = "Non-Container"
 
 run_type = st.selectbox(
     "Select Run Type",
@@ -54,7 +64,7 @@ gt = st.number_input(
 calculate = st.button("Calculate Charges")
 
 # -----------------------------
-# CALCULATION
+# CALCULATION SECTION
 # -----------------------------
 
 if calculate and gt > 0:
@@ -64,10 +74,10 @@ if calculate and gt > 0:
     currency = "USD"
 
     # ==============================
-    # CONTAINER
+    # CONTAINER RATES
     # ==============================
 
-    if vessel_category == "Container Vessel":
+    if vessel_category == "Container":
 
         if run_type == "Foreign Run":
             currency = "USD"
@@ -104,7 +114,7 @@ if calculate and gt > 0:
                 rate = 22.35
 
     # ==============================
-    # OTHER THAN CONTAINER
+    # NON-CONTAINER RATES
     # ==============================
 
     else:
@@ -144,7 +154,7 @@ if calculate and gt > 0:
                 rate = 22.87
 
     # -----------------------------
-    # TOTAL CALCULATION
+    # FINAL CALCULATION
     # -----------------------------
 
     if rate == 0:
@@ -156,7 +166,6 @@ if calculate and gt > 0:
         else:
             base_total = calculated
 
-    # Fuel surcharge now dynamic
     fuel_surcharge = gt * fuel_rate
     total = base_total + fuel_surcharge
 
@@ -166,6 +175,8 @@ if calculate and gt > 0:
 
     st.subheader("💰 Charges Breakdown")
 
+    st.write(f"Selected Vessel Type: {vessel_type}")
+    st.write(f"Rate Category Applied: {vessel_category}")
     st.write(f"Base Charge: {round(base_total,2)} {currency}")
     st.write(f"Fuel Surcharge ({fuel_rate} per GT): {round(fuel_surcharge,2)} {currency}")
     st.success(f"Total Charge: {round(total,2)} {currency}")
