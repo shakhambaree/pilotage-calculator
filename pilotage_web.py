@@ -2,14 +2,13 @@ import streamlit as st
 
 st.set_page_config(page_title="Pilotage Charges Calculator", page_icon="🚢")
 
-# Fixed Conversion Rate
-USD_TO_INR = 90.73
+USD_TO_INR = 90.73  # Fixed conversion rate
 
 st.title("🚢 Pilotage Charges Calculator")
-st.markdown("Calculate Pilotage Charges with Currency Conversion")
+st.markdown("Includes one Berthing and one Un-berthing")
 
 # -----------------------------
-# DROPDOWNS
+# INPUT SECTION
 # -----------------------------
 
 vessel_category = st.selectbox(
@@ -24,51 +23,64 @@ run_type = st.selectbox(
 
 gt = st.number_input("Enter Gross Tonnage (GT)", min_value=0.0)
 
-currency = st.selectbox("Select Currency for Base Calculation", ["USD", "INR"])
-
 # -----------------------------
-# RATE LOGIC
+# RATE CALCULATION
 # -----------------------------
 
 rate = 0
 minimum = 0
-fuel_surcharge = 0
+currency = "USD"
 
-# =============================
-# CONTAINER VESSEL (Sample Slabs – Adjust if needed)
-# =============================
+# ==============================
+# CONTAINER VESSELS
+# ==============================
+
 if vessel_category == "Container Vessel":
 
     if run_type == "Foreign Run":
+        currency = "USD"
 
         if gt <= 3000:
-            rate = 0.50
-            minimum = 3000
+            rate = 0
+            minimum = 2095
         elif gt <= 10000:
-            rate = 0.55
+            rate = 0.376
+            minimum = 3492
+        elif gt <= 15000:
+            rate = 0.433
         elif gt <= 30000:
-            rate = 0.70
+            rate = 0.502
+        elif gt <= 60000:
+            rate = 0.712
         else:
-            rate = 0.85
+            rate = 0.824
 
     else:  # Coastal Run
+        currency = "INR"
 
         if gt <= 3000:
-            rate = 40
-            minimum = 200000
+            rate = 0
+            minimum = 41889
         elif gt <= 10000:
-            rate = 45
+            rate = 9.78
+            minimum = 41889
+        elif gt <= 15000:
+            rate = 11.17
         elif gt <= 30000:
-            rate = 60
+            rate = 13.96
+        elif gt <= 60000:
+            rate = 19.54
         else:
-            rate = 75
+            rate = 22.35
 
-# =============================
-# OTHER THAN CONTAINER (FROM YOUR IMAGE)
-# =============================
+# ==============================
+# OTHER THAN CONTAINER
+# ==============================
+
 else:
 
     if run_type == "Foreign Run":
+        currency = "USD"
 
         if gt <= 3000:
             rate = 0
@@ -86,6 +98,7 @@ else:
             rate = 0.929
 
     else:  # Coastal Run
+        currency = "INR"
 
         if gt <= 3000:
             rate = 0
@@ -103,7 +116,7 @@ else:
             rate = 22.87
 
 # -----------------------------
-# CALCULATION
+# CALCULATE TOTAL
 # -----------------------------
 
 if gt > 0:
@@ -117,28 +130,25 @@ if gt > 0:
         else:
             base_total = calculated
 
-    # Fuel Surcharge (0.1 per GT)
+    # Fuel surcharge
     fuel_surcharge = gt * 0.1
-
     total = base_total + fuel_surcharge
 
-    st.success(f"Base Charge: {round(base_total,2)} {currency}")
-    st.info(f"Fuel Surcharge (0.1 per GT): {round(fuel_surcharge,2)} {currency}")
+    st.subheader("💰 Charges Breakdown")
+    st.write(f"Base Charge: {round(base_total,2)} {currency}")
+    st.write(f"Fuel Surcharge (0.1 per GT): {round(fuel_surcharge,2)} {currency}")
     st.success(f"Total Charge: {round(total,2)} {currency}")
 
     # -----------------------------
     # CURRENCY CONVERSION
     # -----------------------------
 
+    st.subheader("🔄 Currency Conversion")
+
     if currency == "USD":
         total_inr = total * USD_TO_INR
-        st.markdown("### 💰 Converted Amount")
         st.write(f"Equivalent in INR: ₹ {round(total_inr,2)}")
 
     else:
         total_usd = total / USD_TO_INR
-        st.markdown("### 💰 Converted Amount")
         st.write(f"Equivalent in USD: $ {round(total_usd,2)}")
-
-
-   
