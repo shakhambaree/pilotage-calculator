@@ -1,5 +1,4 @@
 import streamlit as st
-from datetime import date
 
 st.set_page_config(page_title="Pilotage Charges Calculator", page_icon="🚢")
 
@@ -7,28 +6,8 @@ st.title("🚢 Pilotage Charges Calculator")
 st.markdown("Includes one Berthing and one Un-berthing")
 
 # -----------------------------
-# INVOICE DETAILS
-# -----------------------------
-
-st.subheader("Invoice Details")
-
-colA, colB = st.columns(2)
-
-with colA:
-    vessel_name = st.text_input("Vessel Name")
-    invoice_no = st.text_input("Invoice Number")
-    port = st.text_input("Port Name", value="Chennai")
-
-with colB:
-    agent_name = st.text_input("Shipping Agent")
-    voyage_no = st.text_input("Voyage Number")
-    invoice_date = st.date_input("Invoice Date", value=date.today())
-
-# -----------------------------
 # INPUT SECTION
 # -----------------------------
-
-st.subheader("Calculation Inputs")
 
 col1, col2 = st.columns(2)
 
@@ -65,15 +44,18 @@ vessel_type = st.selectbox(
     ]
 )
 
+# Internal Mapping
 if vessel_type == "Container":
     vessel_category = "Container"
 else:
     vessel_category = "Non-Container"
 
 run_type = st.selectbox(
-    "Select Run Type", ["Foreign Run", "Coastal Run"]
+    "Select Run Type",
+    ["Foreign Run", "Coastal Run"]
 )
 
+# Whole number GT
 gt = st.number_input(
     "Enter Gross Tonnage (GT)",
     min_value=0,
@@ -84,7 +66,7 @@ gt = st.number_input(
 calculate = st.button("Calculate Charges")
 
 # -----------------------------
-# CALCULATION
+# CALCULATION SECTION
 # -----------------------------
 
 if calculate and gt > 0:
@@ -92,6 +74,10 @@ if calculate and gt > 0:
     rate = 0
     minimum = 0
     currency = "USD"
+
+    # ==============================
+    # CONTAINER RATES
+    # ==============================
 
     if vessel_category == "Container":
 
@@ -129,6 +115,10 @@ if calculate and gt > 0:
             else:
                 rate = 22.35
 
+    # ==============================
+    # NON-CONTAINER RATES
+    # ==============================
+
     else:
 
         if run_type == "Foreign Run":
@@ -165,100 +155,43 @@ if calculate and gt > 0:
             else:
                 rate = 22.87
 
-    # Base calculation
+    # -----------------------------
+    # FINAL CALCULATION
+    # -----------------------------
+
     if rate == 0:
         base_total = minimum
     else:
         calculated = gt * rate
-        base_total = max(calculated, minimum) if minimum > 0 else calculated
+        if minimum > 0:
+            base_total = max(calculated, minimum)
+        else:
+            base_total = calculated
 
     fuel_surcharge = gt * fuel_rate
     total = base_total + fuel_surcharge
 
-    # GST (18% example)
-    gst = total * 0.18
-    grand_total = total + gst
-
     # -----------------------------
-    # TABS FOR OUTPUT
+    # OUTPUT
     # -----------------------------
 
-    tab1, tab2, tab3 = st.tabs(
-        ["Charges Breakdown", "Tax Invoice", "Performance Invoice"]
-    )
+    st.subheader("💰 Charges Breakdown")
 
-    # -----------------------------
-    # TAB 1 : BREAKDOWN
-    # -----------------------------
+    st.write(f"Selected Vessel Type: {vessel_type}")
+    st.write(f"Rate Category Applied: {vessel_category}")
+    st.write(f"Base Charge: {round(base_total,2)} {currency}")
+    st.write(f"Fuel Surcharge ({fuel_rate:.5f} per GT): {round(fuel_surcharge,5)} {currency}")
+    st.success(f"Total Charge: {round(total,5)} {currency}")
 
-    with tab1:
+    st.subheader("🔄 Currency Conversion")
 
-        st.subheader("💰 Charges Breakdown")
-
-        st.write(f"Vessel Type: {vessel_type}")
-        st.write(f"Rate Category: {vessel_category}")
-
-        st.write(f"Base Charge: {round(base_total,2)} {currency}")
-        st.write(f"Fuel Surcharge: {round(fuel_surcharge,5)} {currency}")
-
-        st.success(f"Total Charge: {round(total,5)} {currency}")
-
-    # -----------------------------
-    # TAB 2 : TAX INVOICE
-    # -----------------------------
-
-    with tab2:
-
-        st.subheader("🧾 TAX INVOICE")
-
-        st.markdown(f"""
-        **Invoice Number:** {invoice_no}  
-        **Invoice Date:** {invoice_date}  
-        **Port:** {port}
-
-        **Vessel Name:** {vessel_name}  
-        **Voyage No:** {voyage_no}  
-        **Agent:** {agent_name}
-
-        ---
-        **Service:** Pilotage Charges  
-        **Gross Tonnage:** {gt}
-
-        Base Charge: {round(base_total,2)} {currency}  
-        Fuel Surcharge: {round(fuel_surcharge,2)} {currency}
-
-        **Subtotal:** {round(total,2)} {currency}  
-        **GST (18%):** {round(gst,2)} {currency}
-
-        ### Grand Total: {round(grand_total,2)} {currency}
-        """)
-
-    # -----------------------------
-    # TAB 3 : PERFORMANCE INVOICE
-    # -----------------------------
-
-    with tab3:
-
-        st.subheader("📄 PERFORMANCE INVOICE")
-
-        st.markdown(f"""
-        **Vessel:** {vessel_name}  
-        **Voyage:** {voyage_no}  
-        **Port:** {port}
-
-        **Service Performed:**  
-        Pilotage – One Berthing & One Un-berthing
-
-        **Gross Tonnage:** {gt}
-
-        Base Charge: {round(base_total,2)} {currency}  
-        Fuel Surcharge: {round(fuel_surcharge,2)} {currency}
-
-        **Total Performance Charge:**  
-        {round(total,2)} {currency}
-
-        Date of Service: {invoice_date}
-        """)
+    if currency == "USD":
+        total_inr = total * USD_TO_INR
+        st.write(f"Equivalent in INR: ₹ {round(total_inr,5)}")
+    else:
+        total_usd = total / USD_TO_INR
+        st.write(f"Equivalent in USD: $ {round(total_usd,5)}")
 
 elif calculate and gt == 0:
     st.warning("Please enter a valid GT value.")
+
